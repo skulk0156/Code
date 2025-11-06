@@ -2,9 +2,21 @@ import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
   employeeId: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  role: { type: String, enum: ['admin', 'employee', 'hr', 'manager'], required: true },
-  createdAt: { type: Date, default: Date.now }
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  role: { 
+    type: String, 
+    enum: ['employee', 'hr', 'manager', 'admin'], 
+    required: true,
+    set: v => v.toLowerCase() // convert role to lowercase automatically
+  },
+  department: { type: String },
+  designation: { type: String },
+  phone: { type: String },
+  profileImage: { type: String },
+  joining_date: { type: String },
+  password: { type: String, required: true }
 });
 
-export default mongoose.model('User', userSchema);
+const User = mongoose.model('User', userSchema);
+export default User;

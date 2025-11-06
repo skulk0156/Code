@@ -1,5 +1,6 @@
 import React from 'react';
 import Navbar from './Navbar';
+import Footer from './Footer';
 
 const Dashboard = () => {
   const user = JSON.parse(localStorage.getItem('user'));
