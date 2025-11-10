@@ -17,7 +17,7 @@ const Navbar = () => {
   const menuItems = [
     { name: 'Dashboard', path: '/dashboard' },
     ...(role === 'admin' || role === 'hr' ? [{ name: 'Employees', path: '/employees' }] : []),
-    ...(role === 'admin' || role === 'manager'
+    ...(role === 'admin' || role === 'manager' || role === 'employee' 
       ? [
           { name: 'Team', path: '/team' },
           { name: 'Tasks', path: '/tasks' },

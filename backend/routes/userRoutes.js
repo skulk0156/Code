@@ -1,12 +1,21 @@
-import express from 'express';
-import { addUser, getUsers } from '../controllers/userController.js';
+import express from "express";
+import {
+  loginUser,
+  createUser,
+  getUsers,
+  getUserById,
+  updateUser,
+  deleteUser,
+  upload
+} from "../controllers/userController.js";
 
 const router = express.Router();
 
-// POST /api/users/add
-router.post('/add', addUser);
-
-// GET /api/users
-router.get('/', getUsers);
+router.post("/login", loginUser);
+router.post("/register", upload.single("profileImage"), createUser);
+router.get("/", getUsers);
+router.get("/:id", getUserById);
+router.put("/:id", upload.single("profileImage"), updateUser);
+router.delete("/:id", deleteUser);
 
 export default router;

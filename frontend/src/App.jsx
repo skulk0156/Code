@@ -4,6 +4,10 @@ import Dashboard from './components/Dashboard';
 import ProfilePage from './components/ProfilePage';
 import Employees from './components/Employees';
 import AddEmployee from './components/AddEmployee';
+import EditEmployee from './components/EditEmployee';
+import Team from './pages/Team'
+import AddTeam from './pages/AddTeam';
+import EditTeam from './pages/EditTeam';
 
 function App() {
   return (
@@ -14,6 +18,11 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/employees" element={<Employees />} />
         <Route path="/add-employee" element={<AddEmployee />} />
+        <Route path="/edit-employee/:id" element={<EditEmployee />} />
+        <Route path="/team" element={<Team />}/>
+        <Route path="/add-team" element={<AddTeam />}/>
+        <Route path="/edit-team/:id" element={<EditTeam />}/>
+
       </Routes>
     </Router>
   );

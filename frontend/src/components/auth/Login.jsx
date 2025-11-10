@@ -21,7 +21,7 @@ const Login = () => {
     setError('');
 
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/login', {
+      const res = await axios.post('http://localhost:5000/api/users/login', {
         employeeId,
         password,
         role,
@@ -29,6 +29,7 @@ const Login = () => {
 
       // Save JWT and user info
       localStorage.setItem('token', res.data.token);
+      localStorage.setItem("role", res.data.user.role);
       localStorage.setItem('user', JSON.stringify(res.data.user));
 
       // Redirect to dashboard after successful login
@@ -95,11 +96,10 @@ const Login = () => {
                 <button
                   type="button"
                   key={r}
-                  className={`px-4 py-2 rounded-lg border font-medium text-sm ${
-                    role === r
+                  className={`px-4 py-2 rounded-lg border font-medium text-sm ${role === r
                       ? 'bg-blue-500 text-white border-blue-500'
                       : 'border-gray-300 text-gray-700 hover:bg-gray-100'
-                  }`}
+                    }`}
                   onClick={() => setRole(r)}
                 >
                   {r.charAt(0).toUpperCase() + r.slice(1)}

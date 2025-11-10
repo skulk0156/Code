@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
     type: String, 
     enum: ['employee', 'hr', 'manager', 'admin'], 
     required: true,
-    set: v => v.toLowerCase() // convert role to lowercase automatically
+    set: v => v.toLowerCase()
   },
   department: { type: String },
   designation: { type: String },

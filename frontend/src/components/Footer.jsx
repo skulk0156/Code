@@ -5,7 +5,7 @@ const Footer = () => {
     <footer className="bg-white text-black py-6 shadow-md rounded-t-lg w-full">
       <div className="max-w-7xl mx-auto text-center">
         <p className="text-sm font-medium">
-          &copy; 2025 Company Name. All rights reserved.
+          &copy; 2025 Wordlane Tech. All rights reserved.
         </p>
       </div>
     </footer>
