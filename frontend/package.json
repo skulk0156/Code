@@ -13,6 +13,7 @@
     "@tailwindcss/postcss": "^4.1.16",
     "axios": "^1.13.2",
     "chart.js": "^4.5.1",
+    "framer-motion": "^12.23.24",
     "react": "^19.1.1",
     "react-beautiful-dnd": "^13.1.1",
     "react-chartjs-2": "^5.3.1",
@@ -24,6 +25,7 @@
     "react-select-country-list": "^2.2.3",
     "react-toastify": "^11.0.5",
     "react-tooltip": "^5.30.0",
+    "recharts": "^3.4.1",
     "sweetalert2": "^11.26.3"
   },
   "devDependencies": {

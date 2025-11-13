@@ -8,6 +8,10 @@ import EditEmployee from './components/EditEmployee';
 import Team from './pages/Team'
 import AddTeam from './pages/AddTeam';
 import EditTeam from './pages/EditTeam';
+import Project from './pages/Project';
+import Tasks from './pages/Tasks';
+import Attendance from './pages/Attendance';
+import Leave from './pages/Leave';
 
 function App() {
   return (
@@ -22,6 +26,10 @@ function App() {
         <Route path="/team" element={<Team />}/>
         <Route path="/add-team" element={<AddTeam />}/>
         <Route path="/edit-team/:id" element={<EditTeam />}/>
+        <Route path="/projects" element={<Project />}/>
+        <Route path="/tasks" element={<Tasks />}/>
+        <Route path="/attendance" element={<Attendance />}/>
+        <Route path="/leave" element={<Leave />}/>
 
       </Routes>
     </Router>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import CompanyLogo from '../assets/logo.png';
-import { Bell, Menu, X, User } from 'lucide-react'; // User icon
+import { Bell, Menu, X, User } from 'lucide-react';
 
 const Navbar = () => {
   const user = JSON.parse(localStorage.getItem('user'));
@@ -16,18 +16,34 @@ const Navbar = () => {
 
   const menuItems = [
     { name: 'Dashboard', path: '/dashboard' },
+
+    // Admin + HR access
     ...(role === 'admin' || role === 'hr' ? [{ name: 'Employees', path: '/employees' }] : []),
-    ...(role === 'admin' || role === 'manager' || role === 'employee' 
+
+    // Admin + Manager + Employee access
+    ...(role === 'admin' || role === 'manager' || role === 'employee'
       ? [
           { name: 'Team', path: '/team' },
           { name: 'Tasks', path: '/tasks' },
+          { name: 'Projects', path: '/projects' }, // ✅ Added Project here
         ]
       : []),
+
+    // Admin + HR + Manager access
     ...(role === 'admin' || role === 'hr' || role === 'manager'
       ? [{ name: 'Attendance', path: '/attendance' }]
       : []),
+
+    // Admin + HR access
     ...(role === 'admin' || role === 'hr' ? [{ name: 'Leave', path: '/leave' }] : []),
-    ...(role === 'employee' ? [{ name: 'My Tasks', path: '/my-tasks' }, { name: 'Leave', path: '/leave' }] : []),
+
+    // Employee access
+    ...(role === 'employee'
+      ? [
+          { name: 'My Tasks', path: '/my-tasks' },
+          { name: 'Leave', path: '/leave' },
+        ]
+      : []),
   ];
 
   const handleLogout = () => {
@@ -40,9 +56,13 @@ const Navbar = () => {
     <>
       <nav className="bg-white shadow py-2 px-4 md:px-6">
         <div className="flex justify-between items-center">
-          {/* Left: Logo + Company Name */}
+          {/* Left: Logo */}
           <Link to="/dashboard" className="flex items-center space-x-2 md:space-x-4">
-            <img src={CompanyLogo} alt="Wordlane Tech Logo" className="w-10 h-10 md:w-12 md:h-12 object-contain" />
+            <img
+              src={CompanyLogo}
+              alt="Wordlane Tech Logo"
+              className="w-10 h-10 md:w-12 md:h-12 object-contain"
+            />
             <span className="text-xl md:text-2xl font-bold text-grey-600">Wordlane Tech</span>
           </Link>
 
@@ -70,7 +90,10 @@ const Navbar = () => {
 
             {/* Notifications */}
             <div className="relative">
-              <button onClick={() => setShowNotifications(!showNotifications)} className="text-gray-700 relative">
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="text-gray-700 relative"
+              >
                 <Bell size={20} />
                 <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
               </button>
