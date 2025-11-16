@@ -25,23 +25,31 @@ const Projects = () => {
   const [deleteId, setDeleteId] = useState(null);
 
   const navigate = useNavigate();
+useEffect(() => {
+  const fetchProjects = async () => {
+    try {
+      const token = localStorage.getItem("token");
 
-  // Fetch Projects
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const res = await axios.get('http://localhost:5000/api/projects');
-        setProjects(res.data);
-        setFilteredProjects(res.data);
-      } catch (err) {
-        console.error('Error fetching projects:', err);
-        setError('Failed to fetch projects.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProjects();
-  }, []);
+      const res = await axios.get("http://localhost:5000/api/projects", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const list = res.data.projects || [];
+      setProjects(list);
+      setFilteredProjects(list);
+    } catch (err) {
+      console.error("Error fetching projects:", err);
+      setError("Failed to fetch projects.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchProjects();
+}, []);
+
 
   // Search filter
   useEffect(() => {

@@ -1,4 +1,3 @@
-// AddEmployee.jsx
 import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -8,93 +7,35 @@ import axios from "axios";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 
+// ============================
+// Constant Lists
+// ============================
 const departments = [
-  "Engineering",
-  "HR",
-  "Finance",
-  "Marketing",
-  "Sales",
-  "Operations",
-  "IT Support",
-  "Customer Service",
-  "Logistics",
-  "Legal",
-  "Procurement",
-  "R&D",
-  "Quality",
-  "Admin",
-  "Production",
-  "Maintenance",
-  "Design",
-  "Training",
-  "Compliance",
-  "Analytics",
-  "Strategy",
-  "Security",
-  "Public Relations",
-  "Facilities",
-  "Health & Safety",
-  "UX/UI",
-  "Data Science",
-  "Content",
-  "Business Development",
-  "Innovation"
+  "Engineering","HR","Finance","Marketing","Sales","Operations","IT Support","Customer Service",
+  "Logistics","Legal","Procurement","R&D","Quality","Admin","Production","Maintenance","Design",
+  "Training","Compliance","Analytics","Strategy","Security","Public Relations","Facilities",
+  "Health & Safety","UX/UI","Data Science","Content","Business Development","Innovation"
 ];
 
 const designations = [
-  "Manager",
-  "Senior Engineer",
-  "Junior Engineer",
-  "Intern",
-  "Team Lead",
-  "HR Executive",
-  "Finance Analyst",
-  "Marketing Specialist",
-  "Sales Associate",
-  "Operations Manager",
-  "IT Support Engineer",
-  "Customer Support Rep",
-  "Logistics Coordinator",
-  "Legal Advisor",
-  "Procurement Officer",
-  "R&D Scientist",
-  "Quality Analyst",
-  "Admin Assistant",
-  "Production Supervisor",
-  "Maintenance Technician",
-  "Designer",
-  "Trainer",
-  "Compliance Officer",
-  "Data Analyst",
-  "Strategy Consultant",
-  "Security Officer",
-  "PR Executive",
-  "Facilities Manager",
-  "Safety Officer",
-  "Content Writer",
-  "Business Developer",
-  "Innovation Lead",
-  "UX Designer",
-  "UI Designer",
-  "Data Engineer",
-  "Product Manager",
-  "Software Engineer",
-  "Network Engineer",
-  "Cloud Engineer",
-  "DevOps Engineer",
-  "Database Admin",
-  "AI Specialist",
-  "Machine Learning Engineer",
-  "Cybersecurity Analyst",
-  "Marketing Manager",
-  "Sales Manager",
-  "Operations Executive",
-  "HR Manager",
-  "Finance Manager",
-  "Legal Manager",
+  "Manager","Senior Engineer","Junior Engineer","Intern","Team Lead","HR Executive","Backend Engineer",
+  "Cloud Engineer","Junior HR","Senior HR","Fullstack Engineer","Finance Analyst","Marketing Specialist",
+  "Sales Associate","Operations Manager","IT Support Engineer","Customer Support Rep","Logistics Coordinator",
+  "Legal Advisor","Procurement Officer","R&D Scientist","Quality Analyst","Admin Assistant",
+  "Production Supervisor","Maintenance Technician","Designer","Trainer","Compliance Officer",
+  "Data Analyst","Strategy Consultant","Security Officer","PR Executive","Facilities Manager",
+  "Safety Officer","Content Writer","Business Developer","Innovation Lead","UX Designer","UI Designer",
+  "Data Engineer","Product Manager","Software Engineer","Network Engineer","DevOps Engineer",
+  "Database Admin","AI Specialist","Machine Learning Engineer","Cybersecurity Analyst","Marketing Manager",
+  "Sales Manager","Operations Executive","HR Manager","Finance Manager","Legal Manager",
   "Customer Success Manager"
 ];
 
+const roles = ["admin", "manager", "employee", "hr"];
+
+// ============================
+// AddEmployee Component
+// ============================
 const AddEmployee = () => {
   const [formData, setFormData] = useState({
     employeeId: "",
@@ -108,14 +49,16 @@ const AddEmployee = () => {
     confirmPassword: "",
     department: "",
     designation: "",
-    role: "employee",
+    role: "",
     profileImage: null,
   });
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  // Generate Employee ID yymm + 4 random digits
+  // ============================
+  // Generate Employee ID yymm + 4 digits
+  // ============================
   const generateEmployeeId = (joiningDate) => {
     if (!joiningDate) return "";
     const year = String(joiningDate.getFullYear()).slice(-2);
@@ -124,6 +67,9 @@ const AddEmployee = () => {
     return `${year}${month}${randomNum}`;
   };
 
+  // ============================
+  // Input Change Handler
+  // ============================
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (name === "profileImage") {
@@ -133,44 +79,39 @@ const AddEmployee = () => {
     }
   };
 
+  // ============================
+  // Date Handler
+  // ============================
   const handleDateChange = (date, field) => {
     if (field === "joiningDate") {
       const empId = generateEmployeeId(date);
-      setFormData((prev) => ({ ...prev, [field]: date, employeeId: empId }));
+      setFormData((prev) => ({ ...prev, joiningDate: date, employeeId: empId }));
     } else {
       setFormData((prev) => ({ ...prev, [field]: date }));
     }
   };
 
-  const copyEmpId = async () => {
-    if (!formData.employeeId) return;
-    try {
-      await navigator.clipboard.writeText(formData.employeeId);
-      Swal.fire({
-        icon: "success",
-        title: "Copied!",
-        text: "Employee ID copied to clipboard",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-    } catch (err) {
-      console.error(err);
-    }
+  // ============================
+  // Role Handler
+  // ============================
+  const HandleRole = (value) => {
+    setFormData((prev) => ({ ...prev, role: value }));
   };
 
+  // ============================
+  // Copy Employee ID
+  // ============================
+  const copyEmpId = async () => {
+    if (!formData.employeeId) return;
+    await navigator.clipboard.writeText(formData.employeeId);
+    Swal.fire({ icon: "success", title: "Copied!", text: "Employee ID copied", timer: 1500, showConfirmButton: false });
+  };
+
+  // ============================
+  // Validate Form
+  // ============================
   const validateForm = () => {
-    const {
-      fullName,
-      email,
-      phone,
-      gender,
-      dob,
-      joiningDate,
-      password,
-      confirmPassword,
-      department,
-      designation,
-    } = formData;
+    const { fullName, email, phone, gender, dob, joiningDate, password, confirmPassword, department, designation, role } = formData;
 
     if (!fullName) return "Full Name is required";
     if (!email) return "Email is required";
@@ -180,26 +121,26 @@ const AddEmployee = () => {
     if (!joiningDate) return "Joining Date is required";
     if (!department) return "Department is required";
     if (!designation) return "Designation is required";
+    if (!role) return "Role is required";
     if (!password) return "Password is required";
     if (password !== confirmPassword) return "Passwords do not match";
 
     return null;
   };
 
+  // ============================
+  // Submit Handler
+  // ============================
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const error = validateForm();
     if (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Validation Error",
-        text: error,
-      });
+      Swal.fire({ icon: "error", title: "Validation Error", text: error });
       return;
     }
 
-    // Show confirmation modal
-    const result = await Swal.fire({
+    const confirm = await Swal.fire({
       title: "Confirm Employee Details",
       html: `
         <strong>Employee ID:</strong> ${formData.employeeId} <br/>
@@ -207,39 +148,37 @@ const AddEmployee = () => {
         <strong>Email:</strong> ${formData.email} <br/>
         <strong>Phone:</strong> ${formData.phone} <br/>
         <strong>Gender:</strong> ${formData.gender} <br/>
-        <strong>DOB:</strong> ${formData.dob.toLocaleDateString()} <br/>
-        <strong>Joining Date:</strong> ${formData.joiningDate.toLocaleDateString()} <br/>
+        <strong>DOB:</strong> ${formData.dob?.toLocaleDateString()} <br/>
+        <strong>Joining Date:</strong> ${formData.joiningDate?.toLocaleDateString()} <br/>
         <strong>Department:</strong> ${formData.department} <br/>
         <strong>Designation:</strong> ${formData.designation} <br/>
+        <strong>Role:</strong> ${formData.role} <br/>
       `,
       icon: "question",
       showCancelButton: true,
       confirmButtonText: "Confirm",
     });
 
-    if (!result.isConfirmed) return;
+    if (!confirm.isConfirmed) return;
 
-    // Prepare FormData for API
-    // Prepare FormData for API
-const data = new FormData();
-data.append("employeeId", formData.employeeId);
-data.append("name", formData.fullName); // <-- map fullName to name
-data.append("email", formData.email);
-data.append("role", formData.role);
-data.append("password", formData.password);
-data.append("department", formData.department);
-data.append("designation", formData.designation);
-if (formData.profileImage) data.append("profileImage", formData.profileImage);
-data.append("phone", formData.phone);
-data.append("joining_date", formData.joiningDate?.toISOString());
-
+    const data = new FormData();
+    data.append("employeeId", formData.employeeId);
+    data.append("name", formData.fullName);
+    data.append("email", formData.email);
+    data.append("phone", formData.phone);
+    data.append("role", formData.role);
+    data.append("password", formData.password);
+    data.append("department", formData.department);
+    data.append("designation", formData.designation);
+    data.append("gender", formData.gender);
+    data.append("dob", formData.dob?.toISOString());
+    data.append("joining_date", formData.joiningDate?.toISOString());
+    if (formData.profileImage) data.append("profileImage", formData.profileImage);
 
     try {
-      const res = await axios.post(
-        "http://localhost:5000/api/users/register",
-        data,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+      const res = await axios.post("http://localhost:5000/api/users/register", data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
       Swal.fire({
         icon: "success",
@@ -247,7 +186,6 @@ data.append("joining_date", formData.joiningDate?.toISOString());
         text: `Employee ${res.data.user.name} added successfully!`,
       });
 
-      // Reset form
       setFormData({
         employeeId: "",
         fullName: "",
@@ -260,11 +198,10 @@ data.append("joining_date", formData.joiningDate?.toISOString());
         confirmPassword: "",
         department: "",
         designation: "",
-        role: "employee",
+        role: "",
         profileImage: null,
       });
     } catch (err) {
-      console.error(err);
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -273,9 +210,13 @@ data.append("joining_date", formData.joiningDate?.toISOString());
     }
   };
 
+  // ============================
+  // UI Starts
+  // ============================
   return (
     <div>
       <Navbar />
+
       <div className="min-h-screen bg-blue-100 flex justify-center items-center px-4 py-8">
         <form
           onSubmit={handleSubmit}
@@ -285,85 +226,40 @@ data.append("joining_date", formData.joiningDate?.toISOString());
             Add New Employee
           </h2>
 
-          {/* Employee ID */}
+          {/* EMPLOYEE ID */}
           <div>
-            <label className="block mb-2 font-semibold text-gray-700">
-              Employee ID
-            </label>
-            <div className="relative flex items-center">
-              <input
-                type="text"
-                name="employeeId"
-                value={formData.employeeId}
-                readOnly
-                className="w-full p-3 pr-12 border border-gray-300 rounded-lg bg-gray-100"
-              />
-              <button
-                type="button"
+            <label className="font-semibold">Employee ID</label>
+            <div className="relative">
+              <input type="text" value={formData.employeeId} readOnly className="w-full p-3 bg-gray-200 rounded" />
+              <FaRegCopy
                 onClick={copyEmpId}
-                className="absolute right-3 flex items-center justify-center text-gray-600 hover:text-gray-800 top-1/2 transform -translate-y-1/2"
-                title="Copy Employee ID"
-              >
-                <FaRegCopy />
-              </button>
-            </div>
-          </div>
-
-          {/* Full Name & Email */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block mb-2 font-semibold text-gray-700">
-                Full Name
-              </label>
-              <input
-                type="text"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                placeholder="Enter full name"
-                className="w-full p-3 border border-gray-300 rounded-lg"
-              />
-            </div>
-            <div>
-              <label className="block mb-2 font-semibold text-gray-700">
-                Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Enter email"
-                className="w-full p-3 border border-gray-300 rounded-lg"
+                className="absolute right-3 top-3 cursor-pointer"
+                title="Copy ID"
               />
             </div>
           </div>
 
-          {/* Phone & Gender */}
+          {/* FULL NAME + EMAIL */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block mb-2 font-semibold text-gray-700">
-                Phone Number
-              </label>
-              <input
-                type="text"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="Enter phone number"
-                className="w-full p-3 border border-gray-300 rounded-lg"
-              />
+              <label className="font-semibold">Full Name</label>
+              <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} className="w-full p-3 border rounded" />
             </div>
             <div>
-              <label className="block mb-2 font-semibold text-gray-700">
-                Gender
-              </label>
-              <select
-                name="gender"
-                value={formData.gender}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-lg bg-white"
-              >
+              <label className="font-semibold">Email</label>
+              <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full p-3 border rounded" />
+            </div>
+          </div>
+
+          {/* PHONE + GENDER */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="font-semibold">Phone Number</label>
+              <input type="text" name="phone" value={formData.phone} onChange={handleChange} className="w-full p-3 border rounded" />
+            </div>
+            <div>
+              <label className="font-semibold">Gender</label>
+              <select name="gender" value={formData.gender} onChange={handleChange} className="w-full p-3 border rounded bg-white">
                 <option value="">Select gender</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
@@ -372,145 +268,113 @@ data.append("joining_date", formData.joiningDate?.toISOString());
             </div>
           </div>
 
-          {/* DOB & Joining Date */}
+          {/* DOB + JOINING DATE */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block mb-2 font-semibold text-gray-700">
-                Date of Birth
-              </label>
+              <label className="font-semibold">Date of Birth</label>
               <DatePicker
                 selected={formData.dob}
                 onChange={(date) => handleDateChange(date, "dob")}
                 dateFormat="dd/MM/yyyy"
-                maxDate={new Date()}
-                placeholderText="Select date of birth"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 cursor-pointer"
+                className="w-full p-3 border rounded"
               />
             </div>
             <div>
-              <label className="block mb-2 font-semibold text-gray-700">
-                Joining Date
-              </label>
+              <label className="font-semibold">Joining Date</label>
               <DatePicker
                 selected={formData.joiningDate}
                 onChange={(date) => handleDateChange(date, "joiningDate")}
                 dateFormat="dd/MM/yyyy"
-                placeholderText="Select joining date"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 cursor-pointer"
+                className="w-full p-3 border rounded"
               />
             </div>
           </div>
 
-          {/* Department & Designation */}
+          {/* DEPARTMENT + DESIGNATION */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block mb-2 font-semibold text-gray-700">
-                Department
-              </label>
+              <label className="font-semibold">Department</label>
               <select
                 name="department"
                 value={formData.department}
                 onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-lg bg-white"
+                className="w-full p-3 border rounded bg-white"
               >
                 <option value="">Select Department</option>
                 {departments.map((d, i) => (
-                  <option key={i} value={d}>
-                    {d}
-                  </option>
+                  <option key={i} value={d}>{d}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block mb-2 font-semibold text-gray-700">
-                Designation
-              </label>
+              <label className="font-semibold">Designation</label>
               <select
                 name="designation"
                 value={formData.designation}
                 onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-lg bg-white"
+                className="w-full p-3 border rounded bg-white"
               >
                 <option value="">Select Designation</option>
                 {designations.map((d, i) => (
-                  <option key={i} value={d}>
-                    {d}
-                  </option>
+                  <option key={i} value={d}>{d}</option>
                 ))}
               </select>
             </div>
           </div>
 
-          {/* Password & Confirm */}
+          {/* ROLE */}
+          <div>
+            <label className="font-semibold">Role</label>
+            <select
+              value={formData.role}
+              onChange={(e) => HandleRole(e.target.value)}
+              className="w-full p-3 border rounded bg-white"
+            >
+              <option value="">Select Role</option>
+              {roles.map((r, i) => (
+                <option key={i} value={r}>{r.toUpperCase()}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* PASSWORD + CONFIRM */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="relative flex flex-col justify-center">
-              <label className="block mb-2 font-semibold text-gray-700">
-                Password
-              </label>
-              <div className="relative flex items-center">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Enter password"
-                  className="w-full p-3 pr-12 border border-gray-300 rounded-lg"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 flex items-center justify-center text-gray-600 hover:text-gray-800 top-1/2 transform -translate-y-1/2"
-                >
+            <div>
+              <label className="font-semibold">Password</label>
+              <div className="relative">
+                <input type={showPassword ? "text" : "password"} name="password" value={formData.password} onChange={handleChange} className="w-full p-3 border rounded" />
+                <span className="absolute right-3 top-3 cursor-pointer" onClick={() => setShowPassword(!showPassword)}>
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
-                </button>
+                </span>
               </div>
             </div>
-            <div className="relative flex flex-col justify-center">
-              <label className="block mb-2 font-semibold text-gray-700">
-                Confirm Password
-              </label>
-              <div className="relative flex items-center">
-                <input
-                  type={showConfirm ? "text" : "password"}
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  placeholder="Confirm password"
-                  className="w-full p-3 pr-12 border border-gray-300 rounded-lg"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirm(!showConfirm)}
-                  className="absolute right-3 flex items-center justify-center text-gray-600 hover:text-gray-800 top-1/2 transform -translate-y-1/2"
-                >
+            <div>
+              <label className="font-semibold">Confirm Password</label>
+              <div className="relative">
+                <input type={showConfirm ? "text" : "password"} name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} className="w-full p-3 border rounded" />
+                <span className="absolute right-3 top-3 cursor-pointer" onClick={() => setShowConfirm(!showConfirm)}>
                   {showConfirm ? <FaEyeSlash /> : <FaEye />}
-                </button>
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Profile Image */}
+          {/* PROFILE IMAGE */}
           <div>
-            <label className="block mb-2 font-semibold text-gray-700">
-              Profile Image
-            </label>
-            <input
-              type="file"
-              name="profileImage"
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg p-2"
-            />
+            <label className="font-semibold">Profile Image</label>
+            <input type="file" name="profileImage" onChange={handleChange} className="w-full p-3 border rounded" />
           </div>
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition duration-200"
+            className="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700"
           >
             Add Employee
           </button>
         </form>
       </div>
-      <Footer/>
+
+      <Footer />
     </div>
   );
 };

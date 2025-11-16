@@ -36,6 +36,8 @@ const Navbar = () => {
 
     // Admin + HR access
     ...(role === 'admin' || role === 'hr' ? [{ name: 'Leave', path: '/leave' }] : []),
+    
+    ...( role === 'hr' ? [{ name: 'Team', path: '/team' }] : []),
 
     // Employee access
     ...(role === 'employee'

@@ -7,6 +7,7 @@ const activitySchema = new mongoose.Schema({
 
 const dashboardSchema = new mongoose.Schema({
   employeeId: { type: String, required: true },
+  name: {type:String, required: ture},
   totalTasks: { type: Number, default: 0 },
   completedTasks: { type: Number, default: 0 },
   pendingTasks: { type: Number, default: 0 },

@@ -21,15 +21,19 @@ const storage = multer.diskStorage({
 
 export const upload = multer({ storage });
 
+
 // ---------------- Login User ----------------
 export const loginUser = async (req, res) => {
   try {
     const { employeeId, password, role } = req.body;
+
     const user = await User.findOne({ employeeId, role });
-    if (!user) return res.status(404).json({ message: "Invalid employee ID or role" });
+    if (!user)
+      return res.status(404).json({ message: "Invalid employee ID or role" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: "Invalid password" });
+    if (!isMatch)
+      return res.status(401).json({ message: "Invalid password" });
 
     const token = jwt.sign(
       { id: user._id, employeeId: user.employeeId, role: user.role },
@@ -58,18 +62,28 @@ export const loginUser = async (req, res) => {
   }
 };
 
+
 // ---------------- Create User ----------------
 export const createUser = async (req, res) => {
   try {
     const {
-      employeeId, name, email, role, password, department, designation, phone, joining_date,
+      employeeId,
+      name,
+      email,
+      role,
+      password,
+      department,
+      designation,
+      phone,
+      joining_date,
     } = req.body;
 
     if (!employeeId || !name || !email || !role || !password)
       return res.status(400).json({ message: "Missing required fields" });
 
     const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ message: "Email already exists" });
+    if (existingUser)
+      return res.status(400).json({ message: "Email already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -88,32 +102,54 @@ export const createUser = async (req, res) => {
 
     await newUser.save();
     res.status(201).json({ message: "User created", user: newUser });
+
   } catch (error) {
     console.error("Create User Error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
 
+
 // ---------------- Get All Users ----------------
 export const getUsers = async (req, res) => {
   try {
-    const users = await User.find();
+    const users = await User.find().select("-password");
     res.json(users);
   } catch (err) {
-    console.error(err);
+    console.error("Get Users Error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
+
+// ---------------- GET ONLY MANAGERS ----------------
+export const getManagers = async (req, res) => {
+  try {
+    const managers = await User.find({ role: "manager" })
+      .select("-password");
+
+    res.status(200).json(managers);
+  } catch (error) {
+    console.error("Error fetching managers:", error);
+    res.status(500).json({ message: "Server error while fetching managers" });
+  }
+};
+
+
 // ---------------- Get User By ID ----------------
-// GET /api/users/:id
 export const getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const userId = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(userId))
+      return res.status(400).json({ message: "Invalid User ID" });
+
+    const user = await User.findById(userId).select("-password");
     if (!user) return res.status(404).json({ message: "User not found" });
+
     res.json(user);
   } catch (err) {
-    console.error(err);
+    console.error("Get User Error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -122,13 +158,15 @@ export const getUserById = async (req, res) => {
 // ---------------- Update User ----------------
 export const updateUser = async (req, res) => {
   const { id } = req.params;
-  if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid ID" });
+
+  if (!mongoose.Types.ObjectId.isValid(id))
+    return res.status(400).json({ message: "Invalid ID" });
 
   try {
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Delete old image if new one uploaded
+    // Delete old image
     if (req.file && user.profileImage && fs.existsSync(user.profileImage)) {
       fs.unlinkSync(user.profileImage);
     }
@@ -136,31 +174,36 @@ export const updateUser = async (req, res) => {
     const updatedData = { ...req.body };
     if (req.file) updatedData.profileImage = `uploads/${req.file.filename}`;
 
-    const updatedUser = await User.findByIdAndUpdate(id, updatedData, { new: true });
+    const updatedUser = await User.findByIdAndUpdate(id, updatedData, {
+      new: true,
+    });
+
     res.json({ message: "User updated", user: updatedUser });
   } catch (err) {
-    console.error(err);
+    console.error("Update User Error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
+
 // ---------------- Delete User ----------------
 export const deleteUser = async (req, res) => {
   const { id } = req.params;
-  if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid ID" });
+
+  if (!mongoose.Types.ObjectId.isValid(id))
+    return res.status(400).json({ message: "Invalid ID" });
 
   try {
     const user = await User.findByIdAndDelete(id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Delete profile image
     if (user.profileImage && fs.existsSync(user.profileImage)) {
       fs.unlinkSync(user.profileImage);
     }
 
     res.json({ message: "User deleted" });
   } catch (err) {
-    console.error(err);
+    console.error("Delete User Error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

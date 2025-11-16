@@ -12,6 +12,7 @@ import Project from './pages/Project';
 import Tasks from './pages/Tasks';
 import Attendance from './pages/Attendance';
 import Leave from './pages/Leave';
+import AddProject from './pages/AddProject';
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
         <Route path="/tasks" element={<Tasks />}/>
         <Route path="/attendance" element={<Attendance />}/>
         <Route path="/leave" element={<Leave />}/>
+        <Route path="/add-project" element={<AddProject />}/>
 
       </Routes>
     </Router>

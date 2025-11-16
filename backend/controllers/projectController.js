@@ -1,43 +1,96 @@
 import Project from "../models/Project.js";
 
-// Get all projects
+// ---------------- Create Project ----------------
+export const createProject = async (req, res) => {
+  try {
+    const { project_name, description, manager_id, deadline, status } = req.body;
+
+    if (!project_name || !manager_id) {
+      return res.status(400).json({ message: "Project name and manager are required" });
+    }
+
+    const project = await Project.create({
+      project_name,
+      description: description || "",
+      manager: manager_id,
+      status: status || "In Progress",
+      deadline: deadline || null,
+    });
+
+    // Populate manager info before sending response
+    await project.populate("manager", "name email role");
+
+    res.status(201).json({ message: "Project created successfully", project });
+  } catch (err) {
+    console.error("Create Project Error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ---------------- Get All Projects ----------------
 export const getProjects = async (req, res) => {
   try {
-    const projects = await Project.find().sort({ created_at: -1 });
-    res.status(200).json(projects);
+    const projects = await Project.find().populate("manager", "name email role");
+    res.status(200).json({ data: projects });
   } catch (err) {
-    res.status(500).json({ message: "Error fetching projects", error: err.message });
+    console.error("Get Projects Error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-// Add project
-export const addProject = async (req, res) => {
+// ---------------- Get Project By ID ----------------
+export const getProjectById = async (req, res) => {
   try {
-    const { project_name, description, manager_name, status, deadline } = req.body;
-    const newProject = new Project({ project_name, description, manager_name, status, deadline });
-    await newProject.save();
-    res.status(201).json({ message: "Project added successfully", project: newProject });
+    const project = await Project.findById(req.params.id).populate(
+      "manager",
+      "name email role"
+    );
+    if (!project) return res.status(404).json({ message: "Project not found" });
+
+    res.status(200).json(project);
   } catch (err) {
-    res.status(400).json({ message: "Error adding project", error: err.message });
+    console.error("Get Project Error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-// Update project
+// ---------------- Update Project ----------------
 export const updateProject = async (req, res) => {
   try {
-    const project = await Project.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.status(200).json({ message: "Project updated successfully", project });
+    const { project_name, description, manager_id, deadline, status } = req.body;
+
+    const updatedProject = await Project.findByIdAndUpdate(
+      req.params.id,
+      {
+        project_name,
+        description,
+        manager: manager_id,
+        deadline,
+        status,
+      },
+      { new: true }
+    ).populate("manager", "name email role");
+
+    if (!updatedProject)
+      return res.status(404).json({ message: "Project not found" });
+
+    res.status(200).json({ message: "Project updated successfully", project: updatedProject });
   } catch (err) {
-    res.status(400).json({ message: "Error updating project", error: err.message });
+    console.error("Update Project Error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-// Delete project
+// ---------------- Delete Project ----------------
 export const deleteProject = async (req, res) => {
   try {
-    await Project.findByIdAndDelete(req.params.id);
+    const deletedProject = await Project.findByIdAndDelete(req.params.id);
+    if (!deletedProject)
+      return res.status(404).json({ message: "Project not found" });
+
     res.status(200).json({ message: "Project deleted successfully" });
   } catch (err) {
-    res.status(400).json({ message: "Error deleting project", error: err.message });
+    console.error("Delete Project Error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };

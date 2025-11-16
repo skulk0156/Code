@@ -1,162 +1,232 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { FiPlus, FiUser, FiCalendar, FiClipboard } from "react-icons/fi";
-import { motion } from "framer-motion";
-import { toast } from "react-toastify";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import { FiMoreVertical, FiClock, FiUser, FiCalendar } from "react-icons/fi";
 
-const Task = () => {
+const statusColors = {
+  "Pending": "bg-yellow-500",
+  "In Progress": "bg-blue-500",
+  "Completed": "bg-green-500",
+};
+
+const Tasks = () => {
   const [tasks, setTasks] = useState([]);
-  const [teamMembers, setTeamMembers] = useState([]);
-  const [openModal, setOpenModal] = useState(false);
+  const [filteredTasks, setFilteredTasks] = useState([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [showDropdown, setShowDropdown] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
 
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    assigned_to: "",
-    deadline: "",
-  });
+  const token = localStorage.getItem("token");
 
-  const fetchTasks = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/tasks", {
-        withCredentials: true,
-      });
-      setTasks(res.data);
-    } catch (e) {
-      console.log("Error fetching tasks", e);
-    }
-  };
-
-  const fetchTeamMembers = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/tasks/team-members", {
-        withCredentials: true,
-      });
-      setTeamMembers(res.data);
-    } catch (e) {
-      console.log("Error fetching team members", e);
-    }
-  };
-
-  const addTask = async () => {
-    try {
-      await axios.post("http://localhost:5000/api/tasks/add", form, {
-        withCredentials: true,
-      });
-      toast.success("Task Added");
-      setOpenModal(false);
-      fetchTasks();
-    } catch (e) {
-      toast.error("Failed to add task");
-    }
-  };
-
+  // Fetch all tasks
   useEffect(() => {
-    fetchTasks();
-    fetchTeamMembers();
+    const loadTasks = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/tasks", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        setTasks(res.data);
+        setFilteredTasks(res.data);
+      } catch (err) {
+        console.error("Error loading tasks:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTasks();
   }, []);
 
+  // Search filter
+  useEffect(() => {
+    if (!search) setFilteredTasks(tasks);
+    else {
+      setFilteredTasks(
+        tasks.filter(
+          (task) =>
+            task.title.toLowerCase().includes(search.toLowerCase()) ||
+            task.status.toLowerCase().includes(search.toLowerCase()) ||
+            task.assignedTo?.name?.toLowerCase().includes(search.toLowerCase())
+        )
+      );
+    }
+  }, [search, tasks]);
+
+  // Confirm delete
+  const confirmDelete = (id) => {
+    setDeleteId(id);
+    setModalOpen(true);
+  };
+
+  // Handle delete
+  const handleDelete = async () => {
+    try {
+      await axios.delete(`http://localhost:5000/api/tasks/${deleteId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setTasks((prev) => prev.filter((t) => t._id !== deleteId));
+      setFilteredTasks((prev) => prev.filter((t) => t._id !== deleteId));
+      setModalOpen(false);
+      alert("Task deleted successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete task.");
+    }
+  };
+
   return (
-    <div className="p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">Tasks</h1>
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 to-blue-100">
+      <Navbar />
 
-        <button
-          onClick={() => setOpenModal(true)}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl shadow-md hover:bg-blue-700 transition"
-        >
-          <FiPlus /> Add Task
-        </button>
-      </div>
+      <div className="flex-1 p-6 max-w-7xl mx-auto">
 
-      {/* Tasks Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {tasks.map((task) => (
-          <motion.div
-            key={task._id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white p-5 shadow-lg rounded-2xl border"
-          >
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <FiClipboard /> {task.title}
-            </h2>
-            <p className="text-gray-600 text-sm mt-2">{task.description}</p>
+        {/* Header + Search + Add btn */}
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+          <h1 className="text-4xl font-extrabold text-blue-700">Tasks Overview</h1>
 
-            <div className="mt-4 flex items-center gap-2 text-gray-700">
-              <FiUser /> {task.assigned_to?.name}
-            </div>
-
-            <div className="mt-1 flex items-center gap-2 text-gray-700">
-              <FiCalendar /> {task.deadline}
-            </div>
-
-            <div className="mt-3 text-sm font-medium text-blue-600">
-              Status: <span className="text-gray-800">In Progress</span>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* ADD TASK MODAL */}
-      {openModal && (
-        <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-2xl shadow-xl w-[400px]">
-            <h2 className="text-xl font-semibold mb-4">Add New Task</h2>
-
+          <div className="flex gap-3 flex-col sm:flex-row w-full sm:w-auto">
             <input
               type="text"
-              placeholder="Task Title"
-              className="w-full mb-3 p-2 border rounded-lg"
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              placeholder="Search by task, status, or assignee..."
+              className="px-4 py-2 rounded-full shadow-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 flex-1"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
             />
-
-            <textarea
-              placeholder="Description"
-              className="w-full mb-3 p-2 border rounded-lg"
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-            />
-
-            {/* TEAM MEMBERS (Manager Team Only) */}
-            <select
-              className="w-full mb-3 p-2 border rounded-lg"
-              onChange={(e) => setForm({ ...form, assigned_to: e.target.value })}
+            <button
+              onClick={() => (window.location.href = "/add-task")}
+              className="bg-blue-600 text-white px-5 py-2 rounded-full shadow-lg hover:bg-blue-700 transition flex items-center gap-2"
             >
-              <option value="">Assign to</option>
-              {teamMembers.map((member) => (
-                <option value={member._id} key={member._id}>
-                  {member.name}
-                </option>
-              ))}
-            </select>
+              + Add Task
+            </button>
+          </div>
+        </div>
 
-            <input
-              type="date"
-              className="w-full mb-3 p-2 border rounded-lg"
-              onChange={(e) => setForm({ ...form, deadline: e.target.value })}
-            />
+        {/* Loading */}
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600" />
+          </div>
+        ) : filteredTasks.length === 0 ? (
+          <p className="text-gray-600 text-center text-lg mt-10">
+            No tasks found.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredTasks.map((task, index) => (
+              <div
+                key={task._id}
+                className="relative bg-white rounded-3xl shadow-md p-6 border border-blue-200 transform transition-all duration-300 hover:scale-105 hover:shadow-2xl animate-fadeIn"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                {/* Dropdown Menu */}
+                <div className="absolute top-4 right-4">
+                  <button
+                    onClick={() =>
+                      setShowDropdown(showDropdown === task._id ? null : task._id)
+                    }
+                    className="p-1 rounded-full bg-gray-100 hover:bg-gray-200 transition"
+                  >
+                    <FiMoreVertical />
+                  </button>
 
-            <div className="flex justify-end gap-3 mt-3">
+                  <div
+                    className={`absolute right-0 mt-2 w-32 bg-white border border-gray-300 rounded-md shadow-lg z-10 overflow-hidden transition-all duration-300 ${
+                      showDropdown === task._id
+                        ? "opacity-100 scale-100"
+                        : "opacity-0 scale-95 pointer-events-none"
+                    }`}
+                  >
+                    <button
+                      onClick={() => (window.location.href = `/edit-task/${task._id}`)}
+                      className="block w-full text-left px-4 py-2 hover:bg-blue-100"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => confirmDelete(task._id)}
+                      className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-100"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+
+                {/* Task Title */}
+                <h2 className="text-2xl font-semibold text-blue-700 mb-2">
+                  {task.title}
+                </h2>
+
+                {/* Status */}
+                <span
+                  className={`text-white px-3 py-1 rounded-full text-sm ${
+                    statusColors[task.status] || "bg-gray-500"
+                  }`}
+                >
+                  {task.status}
+                </span>
+
+                {/* Assignee */}
+                <p className="text-gray-600 flex items-center gap-2 mt-3">
+                  <FiUser /> Assigned To:{" "}
+                  <span className="font-medium text-blue-700">
+                    {task.assignedTo?.name || "Unassigned"}
+                  </span>
+                </p>
+
+                {/* Deadline */}
+                <p className="text-gray-600 flex items-center gap-2 mt-1">
+                  <FiCalendar /> Deadline:{" "}
+                  <span className="font-medium">
+                    {task.deadline || "No deadline"}
+                  </span>
+                </p>
+
+                {/* Priority */}
+                <p className="text-gray-600 flex items-center gap-2 mt-1">
+                  <FiClock /> Priority:{" "}
+                  <span className="font-medium">{task.priority}</span>
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Delete Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-96 text-center animate-fadeIn">
+            <h2 className="text-xl font-semibold text-red-600 mb-4">
+              Confirm Delete
+            </h2>
+            <p className="mb-6">Are you sure you want to delete this task?</p>
+
+            <div className="flex justify-center gap-4">
               <button
-                onClick={() => setOpenModal(false)}
-                className="px-4 py-2 bg-gray-300 rounded-lg"
+                onClick={() => setModalOpen(false)}
+                className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
               >
                 Cancel
               </button>
-
               <button
-                onClick={addTask}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                onClick={handleDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
               >
-                Add Task
+                Delete
               </button>
             </div>
           </div>
         </div>
       )}
+
+      <Footer />
     </div>
   );
 };
 
-export default Task;
+export default Tasks;

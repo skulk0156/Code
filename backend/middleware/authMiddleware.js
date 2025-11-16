@@ -1,33 +1,46 @@
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
-// ✅ Verify JWT token
-export const protect = (req, res, next) => {
-  const authHeader = req.headers.authorization;
+// 🔐 Verify Token
+const protect = async (req, res, next) => {
+  let token;
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'Access denied. No token provided.' });
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    try {
+      token = req.headers.authorization.split(" ")[1];
+
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      req.user = await User.findById(decoded.id).select("-password");
+
+      if (!req.user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      next();
+    } catch (error) {
+      return res.status(401).json({ message: "Invalid Token" });
+    }
   }
 
-  const token = authHeader.split(' ')[1];
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // { id, role, employeeId }
-    next();
-  } catch (error) {
-    res.status(401).json({ message: 'Invalid or expired token' });
+  if (!token) {
+    return res.status(401).json({ message: "No token, authorization denied" });
   }
 };
 
-// ✅ Role-based access control middleware
-export const authorizeRoles = (...allowedRoles) => {
+// 🔐 Role Authorization
+export const authorizeRoles = (...roles) => {
   return (req, res, next) => {
-    if (!req.user) return res.status(401).json({ message: 'Not authenticated' });
-
-    if (!allowedRoles.includes(req.user.role)) {
-      return res.status(403).json({ message: 'Access denied: insufficient permissions' });
+    if (!roles.includes(req.user.role)) {
+      return res
+        .status(403)
+        .json({ message: "You are not authorized to access this resource" });
     }
-
     next();
   };
 };
+
+export default protect;   // ✅ Export correct function
